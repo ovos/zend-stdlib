@@ -47,12 +47,11 @@ abstract class ErrorHandler
     /**
      * Starting the error handler
      *
-     * @param int $errorLevel
      */
-    public static function start($errorLevel = \E_WARNING)
+    public static function start()
     {
         if (! static::$stack) {
-            set_error_handler([get_called_class(), 'addError'], $errorLevel);
+            set_error_handler([get_called_class(), 'addError']);
         }
 
         static::$stack[] = null;
