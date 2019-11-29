@@ -9,13 +9,14 @@
 
 namespace ZendTest\Stdlib;
 
+use PHPUnit\Framework\TestCase;
 use Zend\Stdlib\Exception\InvalidArgumentException;
 use Zend\Stdlib\FastPriorityQueue;
 
 /**
  * @group      Zend_Stdlib
  */
-class FastPriorityQueueTest extends \PHPUnit_Framework_TestCase
+class FastPriorityQueueTest extends TestCase
 {
     /**
      * @var FastPriorityQueue
@@ -165,7 +166,8 @@ class FastPriorityQueueTest extends \PHPUnit_Framework_TestCase
 
     public function testSetInvalidExtractFlag()
     {
-        $this->setExpectedException(InvalidArgumentException::class, 'The extract flag specified is not valid');
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('The extract flag specified is not valid');
         $this->queue->setExtractFlags('foo');
     }
 
@@ -287,5 +289,60 @@ class FastPriorityQueueTest extends \PHPUnit_Framework_TestCase
             $listener = $listeners[$i];
             $this->assertFalse($queue->contains($listener), sprintf('Listener %s remained in queue', $i));
         }
+    }
+
+    public function testRemoveShouldNotAffectExtract()
+    {
+        // Removing an element with low priority
+        $queue = new FastPriorityQueue();
+        $queue->insert('a1', 1);
+        $queue->insert('a2', 1);
+        $queue->insert('b', 2);
+        $queue->remove('a1');
+        $expected = ['b', 'a2'];
+        $test = [];
+        while ($value = $queue->extract()) {
+            $test[] = $value;
+        }
+        $this->assertEquals($expected, $test);
+        $this->assertTrue($queue->isEmpty());
+
+        // Removing an element in the middle of a set of elements with the same priority
+        $queue->insert('a1', 1);
+        $queue->insert('a2', 1);
+        $queue->insert('a3', 1);
+        $queue->remove('a2');
+        $expected = ['a1', 'a3'];
+        $test = [];
+        while ($value = $queue->extract()) {
+            $test[] = $value;
+        }
+        $this->assertEquals($expected, $test);
+        $this->assertTrue($queue->isEmpty());
+
+        // Removing an element with high priority
+        $queue->insert('a', 1);
+        $queue->insert('b', 2);
+        $queue->remove('b');
+        $expected = ['a'];
+        $test = [];
+        while ($value = $queue->extract()) {
+            $test[] = $value;
+        }
+        $this->assertEquals($expected, $test);
+        $this->assertTrue($queue->isEmpty());
+    }
+
+    public function testZeroPriority()
+    {
+        $queue = new FastPriorityQueue();
+        $queue->insert('a', 0);
+        $queue->insert('b', 1);
+        $expected = ['b', 'a'];
+        $test = [];
+        foreach ($queue as $value) {
+            $test[] = $value;
+        }
+        $this->assertEquals($expected, $test);
     }
 }

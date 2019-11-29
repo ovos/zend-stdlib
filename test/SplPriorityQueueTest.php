@@ -9,12 +9,13 @@
 
 namespace ZendTest\Stdlib;
 
+use PHPUnit\Framework\TestCase;
 use Zend\Stdlib\SplPriorityQueue;
 
 /**
  * @group      Zend_Stdlib
  */
-class SplPriorityQueueTest extends \PHPUnit_Framework_TestCase
+class SplPriorityQueueTest extends TestCase
 {
     /**
      * @var SplPriorityQueue
@@ -47,20 +48,15 @@ class SplPriorityQueueTest extends \PHPUnit_Framework_TestCase
     {
         $s = serialize($this->queue);
         $unserialized = unserialize($s);
-        $count = count($this->queue);
-        $this->assertSame(
-            $count,
-            count($unserialized),
-            'Expected count ' . $count . '; received ' . count($unserialized)
-        );
 
-        $expected = iterator_to_array($this->queue);
-        $test = iterator_to_array($unserialized);
-        $this->assertSame(
-            $expected,
-            $test,
-            'Expected: ' . var_export($expected, 1) . "\nReceived:" . var_export($test, 1)
-        );
+        // assert same size
+        $this->assertSameSize($this->queue, $unserialized);
+
+        // assert same values
+        $this->assertSame(iterator_to_array($this->queue), iterator_to_array($unserialized));
+
+        // assert equal
+        $this->assertEquals($this->queue, $unserialized);
     }
 
     public function testCanRetrieveQueueAsArray()
